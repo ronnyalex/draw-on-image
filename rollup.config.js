@@ -7,7 +7,7 @@ import alias from '@rollup/plugin-alias'
 import filesize from 'rollup-plugin-filesize'
 import { getBabelOutputPlugin } from '@rollup/plugin-babel'
 
-// const aliases = require('./aliases.config')
+const aliases = require('./aliases.config')
 const path = require('path')
 const packageName = require('./package.json').name
 
