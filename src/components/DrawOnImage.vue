@@ -10,14 +10,16 @@
       <input @change="setImage" style="display: none" ref="input" type="file" name="image" accept="image/*" />
     </div>
     <div class="tools" v-if="canvasLoaded" style="position: sticky; top: 0px">
-      <div @click="cUndo">undo</div>
-      <div @click="cRedo">redo</div>
-      <div @click="setColor('#ffffff')">eraser</div>
-      <div @click="setColor('blue')">blue</div>
-      <div @click="setColor('red')">red</div>
-      <div @click="setColor('black')">black</div>
+      <span class="svg" v-html="undo" @click="cUndo"></span>
+      <span class="svg" v-html="redo" @click="cRedo"></span>
+      <div>
+        <span>Färg på penna</span>
+        &nbsp;
+        <input v-model="color" @change="onColorChange" type="color" />
+      </div>
       <div>
         <span>Storlek på penna</span>
+        &nbsp;
         <input type="text" v-model="size" @input="onSizeChange" style="max-width: 20px" />
       </div>
       <div @click="$emit('onExportedDataUrl', canvas.toDataURL())">Spara bild</div>
@@ -35,6 +37,7 @@
 </template>
 
 <script lang="ts">
+import { undo, redo } from '@/script/svg'
 import Vue from 'vue'
 export default Vue.extend({
   components: {
@@ -60,6 +63,7 @@ export default Vue.extend({
       lastMousePos: { x: 0, y: 0 },
       mousePos: { x: 0, y: 0 },
       size: 8,
+      color: '#000',
       mouseDown: 0,
     }
   },
@@ -67,6 +71,14 @@ export default Vue.extend({
     imageUrl(newValue) {
       console.log('newValue', newValue)
       this.loadImage(newValue)
+    },
+  },
+  computed: {
+    undo() {
+      return undo
+    },
+    redo() {
+      return redo
     },
   },
   created() {
@@ -139,6 +151,9 @@ export default Vue.extend({
     onSizeChange() {
       this.setSize(this.size)
     },
+    onColorChange() {
+      this.setColor(this.color)
+    },
 
     setSize(size: number) {
       if (this.ctx) {
@@ -148,6 +163,7 @@ export default Vue.extend({
     drawDot() {
       if (this.ctx) {
         this.setSize(this.size)
+        this.setColor(this.color)
         if (this.recordPoints.length === 0) {
           this.ctx.beginPath()
           this.ctx.arc(this.mousePos.x, this.mousePos.y, this.size * 0.5, 0, Math.PI * 2, false)
@@ -276,7 +292,8 @@ img {
   position: sticky;
   display: flex;
   align-items: center;
-  & > div:not(:first-child) {
+  cursor: pointer;
+  & > *:not(:first-child) {
     margin-left: 10px;
   }
 }

@@ -3,7 +3,7 @@ import commonjs from '@rollup/plugin-commonjs'
 import typescript from '@wessberg/rollup-plugin-ts'
 import less from 'rollup-plugin-less'
 import vue from 'rollup-plugin-vue'
-// import alias from '@rollup/plugin-alias'
+import alias from '@rollup/plugin-alias'
 import filesize from 'rollup-plugin-filesize'
 import { getBabelOutputPlugin } from '@rollup/plugin-babel'
 
@@ -15,15 +15,15 @@ export default {
   input: 'src/wrapper/index.js',
   output: {
     name: packageName,
-    dir: 'dist/index.js',
+    dir: 'dist/',
     format: 'esm',
     exports: 'named',
   },
   external: ['vue'],
   plugins: [
-    // alias({
-    //   entries: aliases.rollup,
-    // }),
+    alias({
+      entries: aliases.rollup,
+    }),
     typescript({
       tsconfig: (resolvedConfig) => ({
         ...resolvedConfig,
