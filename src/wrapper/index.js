@@ -1,6 +1,6 @@
 // ./src/entry.js
 
-import component from '../components/DrawOnImage.vue'
+import component from '@/components/DrawOnImage.vue'
 
 function install(Vue) {
   if (install.installed) return
