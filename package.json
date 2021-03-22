@@ -22,8 +22,6 @@
   ],
   "scripts": {
     "version": "echo $npm_package_version",
-    "preversion": "npm run lint && npm run build",
-    "postversion": "npm publish",
     "serve": "vue-cli-service serve",
     "clear:dist": "rimraf dist",
     "build": "npm run clear:dist && NODE_ENV=production rollup -c",
