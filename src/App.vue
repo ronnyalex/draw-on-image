@@ -1,11 +1,6 @@
 <template>
   <div id="app">
-    <DrawOnImage
-      :imageUrl="imageUrl"
-      @canvasLoaded="canvasLoaded = true"
-      @updateAddedResources="updateAddedResources"
-      @onExportedDataUrl="sendFile"
-    />
+    <DrawOnImage :imageUrl="imageUrl" @canvasLoaded="canvasLoaded = true" @onExportedDataUrl="sendFile" />
   </div>
 </template>
 
@@ -25,18 +20,6 @@ export default Vue.extend({
     }
   },
   methods: {
-    updateAddedResources(obj: any) {
-      console.log('obj', obj)
-      // const addedResources = {
-      //   uid: this.uppgift.uid,
-      //   resources: [
-      //     { order: 1, resourceType: 'image', resourceLink: 'lala', timeStamp: dayjs().format('YYYYMMDDHHmmss') },
-      //     { order: 2, resourceType: 'image', resourceLink: 'lolo', timeStamp: dayjs().format('YYYYMMDDHHmmss') },
-      //   ],
-      // }
-
-      // this.$root.$emit('updateAddedResources', addedResources)
-    },
     sendFile(dataUrl: any) {
       console.log('dataUrl', dataUrl)
     },
