@@ -1,15 +1,23 @@
 <template>
   <div>
-    <div class="added-resource animation" v-if="!canvasLoaded">
-      <div class="added-resource__wrapper" @click="showFileChooser">
-        <span class="added-resource__wrapper__plus">+</span>
-        <span class="added-resource__wrapper__text">Ladda upp bild</span>
+    <div style="display: flex">
+      <div class="added-resource animation" v-if="!canvasLoaded">
+        <div class="added-resource__wrapper" @click="showFileChooser">
+          <span class="added-resource__wrapper__plus">+</span>
+          <span class="added-resource__wrapper__text">Ladda upp bild</span>
+        </div>
+      </div>
+      <div class="added-resource animation" v-if="!canvasLoaded">
+        <div class="added-resource__wrapper" @click="openCanvasWithoutImage">
+          <span class="added-resource__wrapper__plus">+</span>
+          <span class="added-resource__wrapper__text">Bara rityta</span>
+        </div>
       </div>
     </div>
     <div>
       <input @change="setImage" style="display: none" ref="input" type="file" name="image" accept="image/*" />
     </div>
-    <div class="tools" v-if="canvasLoaded" style="position: sticky; top: 0px">
+    <div class="tools" v-if="canvasLoaded" style="position: sticky; top: 0px; margin: 5px 0 0 35px">
       <span class="svg" v-html="undo" @click="cUndo"></span>
       <span class="svg" v-html="redo" @click="cRedo"></span>
       <div>
@@ -22,7 +30,9 @@
         &nbsp;
         <input type="text" v-model="size" @input="onSizeChange" style="max-width: 20px" />
       </div>
-      <div @click="$emit('onExportedDataUrl', canvas.toDataURL())">Spara bild</div>
+      <button @click="$emit('onExportedDataUrl', canvas.toDataURL())" class="reused-button reused-button--blue">
+        Spara bild
+      </button>
     </div>
 
     <canvas
@@ -90,7 +100,7 @@ export default Vue.extend({
   mounted() {
     this.canvas = (this.$refs as any).canvas as HTMLCanvasElement | null
     if (this.canvas) {
-      this.canvas.width = (this.$el as any).offsetWidth
+      this.canvas.width = (this.$el as any).offsetWidth - 2
     }
   },
   beforeDestroy() {
@@ -99,6 +109,22 @@ export default Vue.extend({
   methods: {
     showFileChooser() {
       ;(this.$refs as any).input.click()
+    },
+    openCanvasWithoutImage() {
+      if (this.canvas) {
+        this.canvas.width = (this.$el as any).offsetWidth - 3
+        this.canvas.height = 450
+        this.canvas.style.border = '1px dotted black'
+        this.ctx = this.canvas?.getContext('2d') ?? null
+        if (this.ctx) {
+          this.ctx.fillStyle = 'white' // White background instead of transparent
+          this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
+        }
+        setTimeout(() => {
+          this.canvasLoaded = true
+          this.$emit('canvasLoaded')
+        }, 100)
+      }
     },
 
     loadImage(url: string) {
@@ -426,6 +452,51 @@ img {
     }
   }
 }
+
+@reused-button-height: 25px;
+@reused-button-background-color-blue: rgba(24, 160, 251, 1);
+@reused-button-background-color-blue-hover: rgb(137, 201, 243);
+@reused-button-background-color-grey: rgba(161, 161, 161, 1);
+@reused-button-background-color-grey-hover: rgb(106, 106, 106);
+.reused-button {
+  padding: 10px;
+  text-decoration: bold;
+  text-transform: none;
+  cursor: pointer;
+  width: 100px;
+  border-radius: 5px;
+  height: @reused-button-height;
+  min-height: @reused-button-height;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  // line-height: calc(~'@{reused-button-height} - 2px');
+  line-height: 28px;
+  position: relative;
+
+  &--blue {
+    background-color: @reused-button-background-color-blue;
+    border: 1px solid @reused-button-background-color-blue;
+    color: white;
+
+    &:hover {
+      background-color: @reused-button-background-color-blue-hover;
+      border: 1px solid @reused-button-background-color-blue-hover;
+    }
+  }
+  &--grey {
+    background-color: @reused-button-background-color-grey;
+    border: 1px solid @reused-button-background-color-grey;
+    color: white;
+
+    &:hover {
+      background-color: @reused-button-background-color-grey-hover;
+      border: 1px solid @reused-button-background-color-grey-hover;
+    }
+  }
+}
+
 .animation {
   -webkit-transition: all 0.2s ease-in-out;
   -moz-transition: all 0.2s ease-in-out;

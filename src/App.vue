@@ -15,8 +15,9 @@ export default Vue.extend({
   },
   data() {
     return {
-      imageUrl:
-        'https://firebasestorage.googleapis.com/v0/b/examnet-student-photos/o/eKyZwh8n2hqsgCnvTfNj.jpg?alt=media&token=c2a2969f-1bfc-4099-b3f9-b5d5323c573d',
+      imageUrl: '',
+      // imageUrl:
+      // 'https://firebasestorage.googleapis.com/v0/b/examnet-student-photos/o/eKyZwh8n2hqsgCnvTfNj.jpg?alt=media&token=c2a2969f-1bfc-4099-b3f9-b5d5323c573d',
     }
   },
   methods: {
