@@ -22,14 +22,17 @@
         &nbsp;
         <input type="text" v-model="size" @input="onSizeChange" style="max-width: 20px" />
       </div>
-      <div @click="$emit('onExportedDataUrl', canvas.toDataURL())">Spara bild1</div>
+      <div @click="$emit('onExportedDataUrl', canvas.toDataURL())">Spara bild</div>
     </div>
 
     <canvas
       ref="canvas"
-      @mousemove="sketchpadMouseMove"
-      @mousedown="sketchpadMouseDown"
-      @mouseup="sketchpadMouseUpInside"
+      @mousemove="mouseMove"
+      @mousedown="mouseDown"
+      @mouseup="mouseUpInside"
+      @touchstart="touchStart"
+      @touchend="touchEnd"
+      @touchmove="touchMove"
       width="0"
       height="0"
     ></canvas>
@@ -64,7 +67,7 @@ export default Vue.extend({
       mousePos: { x: 0, y: 0 },
       size: 8,
       color: '#000',
-      mouseDown: 0,
+      isMouseDown: false,
     }
   },
   watch: {
@@ -82,7 +85,7 @@ export default Vue.extend({
     },
   },
   created() {
-    window.addEventListener('mouseup', this.sketchpadMouseUp)
+    window.addEventListener('mouseup', this.mouseUp)
     if (this.imageUrl !== '') this.loadImage(this.imageUrl)
   },
   mounted() {
@@ -92,7 +95,7 @@ export default Vue.extend({
     }
   },
   beforeDestroy() {
-    window.removeEventListener('mouseup', this.sketchpadMouseUp)
+    window.removeEventListener('mouseup', this.mouseUp)
   },
   methods: {
     showFileChooser() {
@@ -199,29 +202,6 @@ export default Vue.extend({
         }
       }
     },
-    sketchpadMouseDown() {
-      this.mouseDown = 1
-      this.lastMousePos = this.mousePos
-      this.drawDot()
-    },
-    sketchpadMouseMove(e: any) {
-      // Update the mouse co-ordinates when moved
-      this.getMousePos(e)
-
-      // Draw a pixel if the mouse button is currently being pressed
-      if (this.mouseDown == 1 && this.drawing === true) {
-        this.drawDot()
-      }
-
-      // this.addText()
-    },
-    sketchpadMouseUp() {
-      this.recordPoints = []
-      this.mouseDown = 0
-    },
-    sketchpadMouseUpInside() {
-      this.cPush()
-    },
     getMousePos(e: any) {
       if (e.offsetX) {
         this.mousePos.x = e.offsetX
@@ -229,6 +209,58 @@ export default Vue.extend({
       } else if (e.layerX) {
         this.mousePos.x = e.layerX
         this.mousePos.y = e.layerY
+      }
+    },
+    mouseDown() {
+      this.isMouseDown = true
+      this.lastMousePos = this.mousePos
+      this.drawDot()
+    },
+    mouseMove(e: any) {
+      this.getMousePos(e)
+      if (this.isMouseDown === true && this.drawing === true) {
+        this.drawDot()
+      }
+      // this.addText()
+    },
+    mouseUp() {
+      this.recordPoints = []
+      this.isMouseDown = false
+    },
+    mouseUpInside() {
+      this.cPush()
+    },
+    getTouchPos(e: any) {
+      var rect = this.canvas?.getBoundingClientRect()
+      if (!rect) return
+      this.mousePos.x = e.touches[0].clientX - rect.left
+      this.mousePos.y = e.touches[0].clientY - rect.top
+    },
+    touchStart(e: any) {
+      if (e.touches.length > 1) {
+        console.log('större än 1')
+      } else {
+        this.getTouchPos(e)
+        this.isMouseDown = true
+        this.lastMousePos = this.mousePos
+        this.drawDot()
+      }
+    },
+    touchEnd(e: any) {
+      if (e.target === this.canvas) {
+        e.preventDefault()
+        this.cPush()
+        this.recordPoints = []
+        this.isMouseDown = false
+      }
+    },
+    touchMove(e: any) {
+      if (e.target === this.canvas) {
+        e.preventDefault()
+        this.getTouchPos(e)
+        if (this.isMouseDown === true && this.drawing === true) {
+          this.drawDot()
+        }
       }
     },
     drawImageScaled(img: any) {
