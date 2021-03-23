@@ -72,7 +72,6 @@ export default Vue.extend({
   },
   watch: {
     imageUrl(newValue) {
-      console.log('newValue', newValue)
       this.loadImage(newValue)
     },
   },
