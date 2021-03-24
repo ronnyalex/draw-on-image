@@ -1,16 +1,17 @@
 <template>
   <div>
-    <div style="display: flex">
+    <h4 v-if="!canvasLoaded" style="text-align: center">Ladda upp</h4>
+    <div style="display: flex; justify-content: center">
       <div class="added-resource animation" v-if="!canvasLoaded">
         <div class="added-resource__wrapper" @click="showFileChooser">
           <span class="added-resource__wrapper__plus">+</span>
-          <span class="added-resource__wrapper__text">Ladda upp bild</span>
+          <span class="added-resource__wrapper__text">Bild på rityta</span>
         </div>
       </div>
       <div class="added-resource animation" v-if="!canvasLoaded">
         <div class="added-resource__wrapper" @click="openCanvasWithoutImage">
           <span class="added-resource__wrapper__plus">+</span>
-          <span class="added-resource__wrapper__text">Bara rityta</span>
+          <span class="added-resource__wrapper__text">Tom rityta</span>
         </div>
       </div>
     </div>
@@ -431,7 +432,6 @@ img {
 .added-resource {
   height: 70px;
   width: 65px;
-  margin: 10px 0 10px 35px;
   border-radius: 5px;
   border: 1px dotted grey;
   display: flex;
@@ -441,6 +441,9 @@ img {
   font-size: 12px;
   cursor: pointer;
   box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+  &:not(:first-child) {
+    margin-left: 10px;
+  }
   &:hover {
     box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
   }
