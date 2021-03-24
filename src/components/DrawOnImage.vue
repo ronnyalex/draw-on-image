@@ -296,6 +296,7 @@ export default Vue.extend({
         var vRatio = this.canvas.height / img.height
         var ratio = Math.min(hRatio, vRatio)
         this.canvas.height = img.height * ratio
+        this.canvas.width = this.canvas.width - this.reduceWidthForEnablingScrollOnIpad
         this.ctx.drawImage(
           img,
           0,
