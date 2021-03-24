@@ -110,6 +110,7 @@ export default Vue.extend({
   },
   methods: {
     showFileChooser() {
+      this.$emit('addOwnImage')
       ;(this.$refs as any).input.click()
     },
     openCanvasWithoutImage() {
