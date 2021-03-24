@@ -262,8 +262,10 @@ export default Vue.extend({
       this.mousePos.y = e.touches[0].clientY - rect.top
     },
     touchStart(e: any) {
-      if (e.touches.length > 1) {
-        console.log('större än 1')
+      if (e.touches.length === 2) {
+        alert('yo')
+      } else if (e.touches.length > 1) {
+        return
       } else {
         this.getTouchPos(e)
         this.isMouseDown = true
