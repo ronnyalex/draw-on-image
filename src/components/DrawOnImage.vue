@@ -78,6 +78,7 @@ export default Vue.extend({
       size: 8,
       color: '#000',
       isMouseDown: false,
+      reduceWidthForEnablingScrollOnIpad: 60,
     }
   },
   watch: {
@@ -112,7 +113,7 @@ export default Vue.extend({
     },
     openCanvasWithoutImage() {
       if (this.canvas) {
-        this.canvas.width = (this.$el as any).offsetWidth - 3
+        this.canvas.width = (this.$el as any).offsetWidth - this.reduceWidthForEnablingScrollOnIpad
         this.canvas.height = 450
         this.canvas.style.border = '1px dotted black'
         this.ctx = this.canvas?.getContext('2d') ?? null
@@ -262,9 +263,8 @@ export default Vue.extend({
       this.mousePos.y = e.touches[0].clientY - rect.top
     },
     touchStart(e: any) {
-      if (e.touches.length === 2) {
-        alert('yo')
-      } else if (e.touches.length > 1) {
+      if (e.touches.length > 1) {
+        //kanske ska vara  Array.from(e.touches)>1
         return
       } else {
         this.getTouchPos(e)
@@ -296,7 +296,17 @@ export default Vue.extend({
         var vRatio = this.canvas.height / img.height
         var ratio = Math.min(hRatio, vRatio)
         this.canvas.height = img.height * ratio
-        this.ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, img.width * ratio, img.height * ratio)
+        this.ctx.drawImage(
+          img,
+          0,
+          0,
+          img.width - this.reduceWidthForEnablingScrollOnIpad,
+          img.height,
+          0,
+          0,
+          img.width * ratio - this.reduceWidthForEnablingScrollOnIpad,
+          img.height * ratio,
+        )
         this.cPush()
         this.setSize(8)
       }
