@@ -1,0 +1,708 @@
+(function() {
+  console.log(`obj`);
+  var ajaxModule = (function() {
+    var nameFromId = [];
+    var ajaxCall = function(pathUrl, indata, asyncOrNot) {
+      var data = [];
+      $.ajax({
+        url: pathUrl,
+        async: asyncOrNot,
+        data: indata,
+        type: `POST`,
+        success: function(json) {
+          //console.log('hola success');
+          //console.log('hiiii: '+json);
+          // Om json innehåller något gör... Måste finnas om vi inte kör echo json_encode från php
+          try {
+            data = JSON.parse(json);
+            //console.log('jsonPost'+JSON.stringify(data)+'');
+          } catch (e) {
+            console.log("not working");
+          }
+        },
+        error: function() {
+          console.log("failure ajax error");
+        }
+      });
+      return data;
+    };
+
+    return {
+      ajaxCall: ajaxCall
+    };
+  })();
+
+  // Get a regular interval for drawing to the screen
+  window.requestAnimFrame = (function(callback) {
+    return (
+      window.requestAnimationFrame ||
+      window.webkitRequestAnimationFrame ||
+      window.mozRequestAnimationFrame ||
+      window.oRequestAnimationFrame ||
+      window.msRequestAnimaitonFrame ||
+      function(callback) {
+        window.setTimeout(callback, 100 / 60);
+      }
+    );
+  })();
+
+  $(".scrollTextUpp").hide();
+  $(".scrollTextNer").hide();
+  $(".scrollTextLeft").hide();
+  $(".scrollTextRight").hide();
+  $(".scrollWithButtonsUp").on("click", function() {
+    $(".scrollTextUpp").show();
+    $("html, body").animate({ scrollTop: "-=50px" }, 300, function() {
+      $(".scrollTextUpp").hide();
+    });
+  });
+  $(".scrollWithButtonsDown").on("click", function() {
+    $(".scrollTextNer").show();
+    $("html, body").animate({ scrollTop: "+=50px" }, 300, function() {
+      $(".scrollTextNer").hide();
+    });
+  });
+  // $(".scrollWithButtonsLeft").on("click" ,function(){
+  //   $('.scrollTextLeft').show();
+  //   $('html, body').animate({scrollLeft: '-=50px'},300, function() {
+  //     $('.scrollTextLeft').hide();
+  //   });
+  // });
+  // $(".scrollWithButtonsRight").on("click" ,function(){
+  //   $('.scrollTextRight').show();
+  //   $('html, body').animate({scrollLeft: '+=50px'},300, function() {
+  //     $('.scrollTextRight').hide();
+  //   });
+  // });
+
+  // // Set up the canvas
+  var canvas = document.getElementById("sig-canvas");
+  setSizeCanvas();
+  var ctx = canvas.getContext("2d");
+  ctx.strokeStyle = "#000000";
+  ctx.lineWidth = 3;
+
+  ctx.lineJoin = "round";
+  ctx.lineCap = "round";
+  // ctx.font = "30px Arial";
+  // ctx.fillText(username,10,50);
+  var white = false;
+  var textBool = false;
+  var onlyOnce = 0;
+  $(".colorWhite").on("click", function() {
+    // Har ingen aning om varför men dessa måste göras
+    white = true;
+    var strDataInit = canvas.toDataURL();
+    drawDataURLOnCanvas(strDataInit, canvas);
+    //--------------------------------------------------------
+    var ctx = canvas.getContext("2d");
+    ctx.strokeStyle = "#ffffff";
+  });
+  $(".textBtn").on("click", function() {
+    // Har ingen aning om varför men dessa måste göras
+    //white=true;
+    textBool = true;
+
+    var strDataInit = canvas.toDataURL();
+    drawDataURLOnCanvas(strDataInit, canvas);
+    //--------------------------------------------------------
+    var ctx = canvas.getContext("2d");
+    ctx.strokeStyle = "#ffffff";
+  });
+  $(".pencil").on("click", function() {
+    if ($(this).hasClass("colorBlue")) {
+      ctx.strokeStyle = "#0000ff";
+    } else if ($(this).hasClass("colorBlack")) {
+      ctx.strokeStyle = "#000000";
+    } else if ($(this).hasClass("colorRed")) {
+      ctx.strokeStyle = "#ff0000";
+    }
+
+    white = false;
+    textBool = false;
+
+    var strDataInit = canvas.toDataURL();
+    drawDataURLOnCanvas(strDataInit, canvas);
+  });
+
+  // Set up the UI
+  var sigText = document.getElementById("sig-dataUrl");
+  var sigImage = document.getElementById("sig-image");
+  var clearBtn = document.getElementById("sig-clearBtn");
+  var submitBtn = document.getElementById("sig-submitBtn");
+  clearBtn.addEventListener(
+    "click",
+    function(e) {
+      clearCanvas();
+      sigText.innerHTML = "Data URL for your signature will go here!";
+      sigImage.setAttribute("src", "");
+    },
+    false
+  );
+
+  var pathname = window.location.pathname; // Returns path only
+  var url = window.location.href; // Returns full URL
+  console.log("pathname:" + pathname + "");
+  console.log("url:" + url + "");
+  var split = pathname.split("/");
+  var splitParam = url.split("/");
+  var klasskurs = "";
+  var code = splitParam[splitParam.length - 1];
+  console.log("code:" + code + "");
+  var names = splitParam[splitParam.length - 2];
+  if (names == "skiss") {
+    names = "";
+  }
+  console.log("names:" + names + "");
+
+  // submitBtn.addEventListener("click", function (e) {
+  //   var dataUrl = canvas.toDataURL();
+  //   sigImage.setAttribute("src", dataUrl);
+  //   saveImgToSQL()
+  // }, false);
+
+  $.ajax({
+    url: "db_communicate/skiss/getPNGBase64.php",
+    async: false,
+    type: "POST",
+    data: { code: code, names: names },
+    dataType: "json",
+    success: function(data) {
+      array = data;
+      dataUrl = array[0]["pngbase64"];
+      //dataUrl = "img/skiss/vitestar.PNG";
+
+      drawDataURLOnCanvas(dataUrl, canvas);
+      // canvas.style.background = `url('${URLd}')`;
+      // canvas.style.backgroundRepeat = "no-repeat";
+    }
+  });
+
+  function saveImgToSQL() {
+    var dataUrl = canvas.toDataURL();
+    var obj = {};
+    obj["pngbase64"] = dataUrl;
+    obj["code"] = code;
+    obj["names"] = names;
+
+    //console.log(obj)
+
+    ajaxModule.ajaxCall("db_communicate/skiss/saveSkiss.php", obj, true);
+  }
+
+  // $('#img1').on("change", function (e) {
+  //   saveImgFromMobileToSQL()
+  // }, false);
+
+  // function saveImgFromMobileToSQL(){
+  //   var dataUrl = $('#img1').attr('src');
+  //   console.log("dataUrl"+dataUrl)
+  //
+  //   var obj= {};
+  //   obj['pngbase64']=dataUrl;
+  //   obj['code']=code;
+  //   obj['names']=names;
+  //   ajaxModule.ajaxCall('db_communicate/skiss/saveSkiss.php',obj,true);
+  // }
+  function scalePreserveAspectRatio(imgW, imgH, maxW, maxH) {
+    return Math.min(maxW / imgW, maxH / imgH);
+  }
+  $("#fileToUpload1").change(function(e) {
+    var setImageElement = $(this)
+      .closest(".testingImg")
+      .find("img");
+    var idAttr = "#" + setImageElement.attr("id");
+    console.log("idAttr:" + idAttr);
+    console.log(e.target.files[0]);
+    // Jag har adderat onerror för att ta bort alt bilden om vi inte satt bilden
+    // Denna tas dock ej bort så jag lägger här till att ta bort det när jag laddar upp bild
+    setImageElement.removeAttr("onerror");
+    setImageElement.removeAttr("style");
+
+    $(idAttr).attr("path", e.target.files[0]);
+    var loadingImage = loadImage(
+      e.target.files[0],
+      function(img) {
+        var w = img.width;
+        var h = img.height;
+
+        // resize img to fit in the canvas
+        // You can alternately request img to fit into any specified width/height
+        var sizer = scalePreserveAspectRatio(w, h, canvas.width, canvas.height);
+
+        var obj = {};
+        console.log("Processar");
+        var url = img.toDataURL();
+        clearCanvas();
+        ctx.drawImage(img, 0, 0, w, h, 0, 0, w * sizer, h * sizer);
+      },
+      { orientation: true } // Kan sättas till 1,2...8 men true känner av hur den ska sättas
+    );
+    if (!loadingImage) {
+      // Alternative code ...
+    }
+  });
+
+  let timerId = setInterval(myTimer, 3000);
+
+  function myTimer() {
+    saveImgToSQL();
+  }
+
+  // Set up mouse events for drawing
+  var drawing = false;
+  var mousePos = { x: 0, y: 0 };
+  var lastPos = mousePos;
+  canvas.addEventListener(
+    "mousedown",
+    function(e) {
+      drawing = true;
+      mousePressed = true;
+      lastPos = getMousePos(canvas, e);
+      // draw point if not white
+      drawPoint(mousePos, textBool);
+      lastPos = mousePos;
+      var posMouseOrTouch = {
+        x: e.pageX,
+        y: e.pageY
+      };
+      addText(posMouseOrTouch, lastPos);
+    },
+    false
+  );
+  canvas.addEventListener(
+    "mouseup",
+    function(e) {
+      drawing = false;
+      if (mousePressed) {
+        cPush();
+        mousePressed = false;
+        ppts = [];
+      }
+    },
+    false
+  );
+  canvas.addEventListener(
+    "mousemove",
+    function(e) {
+      mousePos = getMousePos(canvas, e);
+    },
+    false
+  );
+
+  // Set up touch events for mobile, etc
+  canvas.addEventListener(
+    "touchstart",
+    function(e) {
+      if (e.touches.length > 1) {
+        console.log("större än 1");
+      } else {
+        mousePos = getTouchPos(canvas, e);
+        var touch = e.touches[0];
+        var mouseEvent = new MouseEvent("mousedown", {
+          clientX: touch.pageX,
+          clientY: touch.pageY
+        });
+        // draw point if not white
+        drawPoint(mousePos, textBool);
+        lastPos = mousePos;
+        var posMouseOrTouch = {
+          x: touch.clientX,
+          y: touch.clientY
+        };
+        addText(posMouseOrTouch, lastPos);
+
+        canvas.dispatchEvent(mouseEvent);
+        mousePressed = true;
+      }
+    },
+    false
+  );
+
+  function addText(bodyPos, lastPos) {
+    if (textBool && onlyOnce == 0) {
+      onlyOnce = 1;
+      //alert("hej")
+      var strInput = `
+      <textarea autofocus id="buu" class="textbox" rows="1" name="" value="" style="width:250px;position:absolute;left:${
+        bodyPos.x
+      }px;top:${bodyPos.y}px;font-size:30px"</textarea>
+      `;
+      $("body").append(strInput);
+      $(".textbox").keyup(function(e) {
+        while (
+          $(this).outerHeight() <
+          this.scrollHeight +
+            parseFloat($(this).css("borderTopWidth")) +
+            parseFloat($(this).css("borderBottomWidth"))
+        ) {
+          $(this).height($(this).height() + 1);
+        }
+      });
+
+      $(".textbox")
+        .click()
+        .focus();
+      $(".textbox").focus();
+      setTimeout(function() {
+        document.getElementById("buu").focus();
+      }, 10);
+      // behövs för att fokuser i mobilen
+      setTimeout(function() {
+        $(".textbox").on("blur", function() {
+          ctx.strokeStyle = "#000000";
+          ctx.font = "30px Arial";
+          var txt = $(this).val();
+          var lineheight = 30;
+          var lines = txt.split("\n");
+          for (var i = 0; i < lines.length; i++) {
+            ctx.fillText(lines[i], lastPos.x, lastPos.y + i * lineheight + 30);
+          }
+          //ctx.fillText(text,lastPos.x,lastPos.y+30);
+          $(".textbox").val("");
+          $(".textbox").remove();
+          cPush();
+          onlyOnce = 0;
+        });
+        // .keypress(function(e) {
+        //   if(e.which == 13) {
+        //     ctx.strokeStyle = "#000000";
+        //     ctx.lineWidth = 3;
+        //     ctx.font = "30px Arial";
+        //     ctx.fillText($(this).val(),lastPos.x,lastPos.y+30);
+        //     $(".textbox").val("");
+        //     $(".textbox").remove();
+        //     cPush()
+        //     onlyOnce = 0;
+        //   }
+        // });
+        white = false;
+        textBool = false;
+        drawing = false;
+      }, 100);
+    }
+  }
+  function drawPoint(mousePos, textBool) {
+    if (!textBool) {
+      ctx.beginPath();
+      var pointSize = 0.8;
+      ctx.arc(mousePos.x, mousePos.y, pointSize, 0, Math.PI * 2, true);
+      ctx.fill();
+    }
+  }
+
+  canvas.addEventListener(
+    "touchend",
+    function(e) {
+      var mouseEvent = new MouseEvent("mouseup", {});
+      canvas.dispatchEvent(mouseEvent);
+      if (mousePressed) {
+        cPush();
+        mousePressed = false;
+        ppts = [];
+      }
+    },
+    false
+  );
+
+  canvas.addEventListener(
+    "touchmove",
+    function(e) {
+      // Om två fingrar så ska inget göras!!!!!
+      if (e.touches.length == 2) {
+      } else {
+        var touch = e.touches[0];
+        var mouseEvent = new MouseEvent("mousemove", {
+          clientX: touch.clientX,
+          clientY: touch.clientY
+        });
+        canvas.dispatchEvent(mouseEvent);
+        mousePressed = true;
+      }
+    },
+    false
+  );
+  var mousePressed = false;
+  var lastX, lastY;
+  var cPushArray = new Array();
+  var cStep = -1;
+  $(".undo").on("click", function() {
+    // console.log("what")
+    //alert("what")
+    cUndo();
+    // ctx.lineWidth = 3;
+    // ctx.strokeStyle = "#000000";
+  });
+  $(".redo").on("click", function() {
+    //console.log("redo what")
+    cRedo();
+    // ctx.lineWidth = 3;
+    // ctx.strokeStyle = "#000000";
+  });
+  // Prevent scrolling when touching the canvas
+  document.body.addEventListener(
+    "touchstart",
+    function(e) {
+      // Om två fingrar så ska inget göras!!!!!
+      //if (e.touches.length !=2) {
+      if (e.target == canvas) {
+        mousePressed = true;
+        e.preventDefault();
+        ppts = [];
+      }
+      //}
+    },
+    { passive: false }
+  );
+
+  document.body.addEventListener(
+    "touchend",
+    function(e) {
+      //if (e.touches.length !=2) {
+      if (e.target == canvas) {
+        e.preventDefault();
+        if (mousePressed) {
+          cPush();
+          mousePressed = false;
+          ppts = [];
+        }
+      }
+      //}
+    },
+    { passive: false }
+  );
+  document.body.addEventListener(
+    "touchmove",
+    function(e) {
+      //if (e.touches.length !=2) {
+      if (e.target == canvas) {
+        mousePressed = true;
+        e.preventDefault();
+      }
+      //}
+    },
+    { passive: false }
+  );
+  //        document.body.addEventListener('gestureend', function(e) {
+  //     if (e.scale < 1.0) {
+  //         alert("zoom")
+  //     } else if (e.scale > 1.0) {
+  //         alert("zoom out")
+  //     }
+  // }, false);
+  // Get the position of the mouse relative to the canvas
+  function getMousePos(canvasDom, mouseEvent) {
+    var rect = canvasDom.getBoundingClientRect();
+    return {
+      x: mouseEvent.clientX - rect.left,
+      y: mouseEvent.clientY - rect.top
+    };
+  }
+
+  // function getMousePos(canvasDom, mouseEvent) {
+  //   var rect = canvasDom.getBoundingClientRect();
+  //   var mouseX = typeof mouseEvent.offsetX !== 'undefined' ? mouseEvent.offsetX : mouseEvent.layerX;
+  //  var mouseY = typeof mouseEvent.offsetY !== 'undefined' ? mouseEvent.offsetY : mouseEvent.layerY;
+  //   if (drawing) {
+  //     ppts.push({x: mouseX,y:mouseY});
+  //   }
+  //
+  //   return {
+  //     x: mouseX,
+  //     y: mouseY
+  //   };
+  // }
+
+  // Get the position of a touch relative to the canvas
+  function getTouchPos(canvasDom, touchEvent) {
+    var rect = canvasDom.getBoundingClientRect();
+    return {
+      x: touchEvent.touches[0].clientX - rect.left,
+      y: touchEvent.touches[0].clientY - rect.top
+    };
+  }
+
+  var ppts = [];
+  // Draw to the canvas
+  function renderCanvas() {
+    if (!textBool) {
+      if (drawing) {
+        if (white) {
+          ctx.globalCompositeOperation = "destination-out";
+          ctx.arc(lastPos.x, lastPos.y, 8, 0, Math.PI * 2, false);
+          ctx.fill();
+          lastPos = mousePos;
+        } else {
+          ctx.beginPath();
+          ppts.push({ x: mousePos.x, y: mousePos.y });
+          if (ppts.length < 3) {
+            ctx.moveTo(lastPos.x, lastPos.y);
+            ctx.lineTo(mousePos.x, mousePos.y);
+            ctx.stroke();
+          }
+          if (ppts.length > 3) {
+            ctx.beginPath();
+            ctx.moveTo(ppts[0].x, ppts[0].y);
+
+            for (var i = 1; i < ppts.length - 2; i++) {
+              var c = (ppts[i].x + ppts[i + 1].x) / 2;
+              var d = (ppts[i].y + ppts[i + 1].y) / 2;
+
+              ctx.quadraticCurveTo(ppts[i].x, ppts[i].y, c, d);
+            }
+
+            // For the last 2 points
+            ctx.quadraticCurveTo(
+              ppts[i].x,
+              ppts[i].y,
+              ppts[i + 1].x,
+              ppts[i + 1].y
+            );
+            ctx.stroke();
+            ppts = [];
+          }
+
+          // ctx.moveTo(lastPos.x, lastPos.y);
+          // ctx.lineTo(mousePos.x, mousePos.y);
+          // ctx.stroke();
+          // ctx.moveTo(lastPos.x, lastPos.y);
+          // ctx.lineTo(mousePos.x, mousePos.y);
+          // ctx.stroke();
+          lastPos = mousePos;
+        }
+      }
+    }
+  }
+
+  // Clear the canvas
+  function clearCanvas() {
+    var pencilColor = ctx.strokeStyle;
+    var pencilWidth = ctx.lineWidth;
+    console.log("strokeStyle:" + pencilWidth);
+
+    canvas.width = canvas.width;
+    ctx.lineWidth = pencilWidth;
+    ctx.strokeStyle = pencilColor;
+  }
+
+  // $(window).resize(function(){
+  //    if (window.innerWidth-10 < canvas.width){
+  //        $('.containerCheck').css('position', 'absolute');
+  //    }
+  //    else{
+  //        $('.containerCheck').css('position', 'fixed');
+  //    }
+  // });
+
+  function setSizeCanvas() {
+    // Nu kan vi scrolla så det är bara att ha lite mer höjd
+    var isMobile = false; //initiate as false
+    // device detection
+    if (/Mobi/.test(navigator.userAgent)) {
+      isMobile = true;
+    }
+    var height = window.innerHeight;
+    var width = window.innerWidth;
+    if (window.innerWidth > window.innerHeight) {
+      // canvas får ej vara större än 4 för då blir bilden för stor och då klarar inte chrome att omvandla dataUrl till src=dataUrl för img
+      if (window.innerHeight > 672) {
+        height = 672;
+      }
+      if (window.innerWidth > 1024) {
+        width = 1024;
+      }
+      canvas.width = width - 10;
+      canvas.height = 2.0 * height;
+    } else {
+      if (window.innerHeight > 928) {
+        height = 928;
+      }
+      if (window.innerWidth > 768) {
+        width = 768;
+      }
+      canvas.width = width - 10;
+      canvas.height = 1.5 * height;
+      //canvas.width = 2*window.innerWidth
+    }
+    if (!isMobile) {
+      canvas.width = 1024 - 10;
+      canvas.height = 2.0 * 672;
+    }
+    // alert(window.innerWidth)
+    // alert(window.innerHeight)
+    //canvas.width = window.innerWidth-0.2*window.innerWidth;
+    //canvas.height = window.innerHeight-0.4*window.innerHeight;
+  }
+
+  cPush();
+  function cPush() {
+    cStep++;
+    //if (cStep < cPushArray.length) { cPushArray.length = cStep; }
+    cPushArray.push(canvas.toDataURL());
+    //console.log("cPush0: "+cPushArray[0]);
+  }
+
+  function drawDataURLOnCanvas(strDataURL, canvasId) {
+    "use strict";
+    clearCanvas();
+    var img = new Image();
+    img.onload = function() {
+      canvasId.getContext("2d").drawImage(img, 0, 0);
+    };
+    img.src = strDataURL;
+  }
+
+  function cUndo() {
+    //console.log("outside "+cStep);
+    if (cStep > 0) {
+      //alert("in undo: "+cPushArray.length)
+      cStep--; //console.log("Inside "+cStep);
+      var strDataURL = cPushArray[cStep];
+      drawDataURLOnCanvas(strDataURL, canvas);
+    }
+  }
+  function cRedo() {
+    if (cStep < cPushArray.length - 1) {
+      cStep++;
+
+      var strDataURL = cPushArray[cStep];
+      drawDataURLOnCanvas(strDataURL, canvas);
+    }
+  }
+
+  // Allow for animation
+  (function drawLoop() {
+    requestAnimFrame(drawLoop);
+    renderCanvas();
+  })();
+
+  //  var mc = new Hammer.Manager(canvas);
+  //
+  // // let the pan gesture support all directions.
+  // // this will block the vertical scrolling on a touch-device while on the element
+  // var singlepan = new Hammer.Pan({
+  //   event: 'pan',
+  //   direction: Hammer.DIRECTION_ALL,
+  //   threshold: 5,
+  //   pointers: 1
+  // });
+  // var multipan = new Hammer.Pan({
+  //   event: 'multipan',
+  //   direction: Hammer.DIRECTION_ALL,
+  //   threshold: 5,
+  //   pointers: 2
+  // });
+  // mc.add(singlepan);
+  // mc.add(multipan);
+  // singlepan.recognizeWith(multipan);
+  // multipan.requireFailure(singlepan);
+  //
+  //
+  // mc.on("multipanup", function(ev) {
+  //   console.log("up")
+  // });
+  // mc.on("multipandown", function(ev) {
+  //   console.log("down")
+  //
+  // });
+})();

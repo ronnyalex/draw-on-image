@@ -1,17 +1,17 @@
 <template>
   <div>
-    <h4 v-if="!canvasLoaded" style="text-align: center">Ladda upp</h4>
+    <h4 v-if="!canvasLoaded" style="text-align: center">Lägg till</h4>
     <div style="display: flex; justify-content: center">
       <div class="added-resource animation" v-if="!canvasLoaded">
         <div class="added-resource__wrapper" @click="showFileChooser">
           <span class="added-resource__wrapper__plus">+</span>
-          <span class="added-resource__wrapper__text">Bild på rityta</span>
+          <span class="added-resource__wrapper__text">Ladda upp bild</span>
         </div>
       </div>
       <div class="added-resource animation" v-if="!canvasLoaded">
         <div class="added-resource__wrapper" @click="openCanvasWithoutImage">
           <span class="added-resource__wrapper__plus">+</span>
-          <span class="added-resource__wrapper__text">Tom rityta</span>
+          <span class="added-resource__wrapper__text">Rityta</span>
         </div>
       </div>
     </div>
@@ -114,6 +114,7 @@ export default Vue.extend({
       ;(this.$refs as any).input.click()
     },
     openCanvasWithoutImage() {
+      this.$emit('onlyDrawingArea')
       if (this.canvas) {
         this.canvas.width = (this.$el as any).offsetWidth - this.reduceWidthForEnablingScrollOnIpad
         this.canvas.height = 450
