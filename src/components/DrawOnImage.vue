@@ -31,7 +31,10 @@
         &nbsp;
         <input type="text" v-model="size" @input="onSizeChange" style="max-width: 20px" />
       </div>
-      <button @click="$emit('onExportedDataUrl', canvas.toDataURL())" class="reused-button reused-button--blue">
+      <button
+        @click="$emit('onExportedDataUrl', {dataUrl:canvas.toDataURL(),'image'})"
+        class="reused-button reused-button--blue"
+      >
         Spara bild
       </button>
     </div>

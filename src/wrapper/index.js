@@ -1,4 +1,4 @@
-// ./src/entry.js
+//.src/wrapper/index.js
 
 import component from '@/components/DrawOnImage.vue'
 
