@@ -481,6 +481,7 @@ img {
   padding: 10px;
   text-decoration: bold;
   text-transform: none;
+  outline: 0;
   cursor: pointer;
   width: 100px;
   border-radius: 5px;
