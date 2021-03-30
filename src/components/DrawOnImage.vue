@@ -31,12 +31,7 @@
         &nbsp;
         <input type="text" v-model="size" @input="onSizeChange" style="max-width: 20px" />
       </div>
-      <button
-        @click="$emit('onExportedDataUrl', { dataUrl: canvas.toDataURL(), type: 'image' })"
-        class="reused-button reused-button--blue"
-      >
-        Spara bild
-      </button>
+      <button @click="saveImage" class="reused-button reused-button--blue">Spara bild</button>
     </div>
 
     <canvas
@@ -112,6 +107,9 @@ export default Vue.extend({
     window.removeEventListener('mouseup', this.mouseUp)
   },
   methods: {
+    saveImage() {
+      this.$emit('onExportedDataUrl', { dataUrl: this.canvas?.toDataURL(), type: 'image' })
+    },
     showFileChooser() {
       this.$emit('addOwnImage')
       ;(this.$refs as any).input.click()
