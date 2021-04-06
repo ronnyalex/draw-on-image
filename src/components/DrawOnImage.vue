@@ -127,6 +127,8 @@ export default Vue.extend({
         }
         setTimeout(() => {
           this.canvasLoaded = true
+          this.cPush()
+
           this.$emit('canvasLoaded')
         }, 100)
       }
@@ -335,6 +337,7 @@ export default Vue.extend({
     },
     cPush() {
       this.cStep = this.cStep + 1
+      this.cPushArray.splice(this.cStep, this.cPushArray.length - this.cStep)
       this.cPushArray.push(this.canvas?.toDataURL())
     },
     cUndo() {
@@ -342,7 +345,6 @@ export default Vue.extend({
       if (this.cStep > 0) {
         //alert("in undo: "+cPushArray.length)
         this.cStep = this.cStep - 1 //console.log("Inside "+cStep);
-        console.log('this.cStep', this.cStep)
         let strDataURL = this.cPushArray[this.cStep]
         this.drawDataURLOnCanvas(strDataURL)
       }
@@ -355,64 +357,6 @@ export default Vue.extend({
         this.drawDataURLOnCanvas(strDataURL)
       }
     },
-    // addText() {
-    //   let onlyOnce = 0
-    //   if (textBool && onlyOnce == 0) {
-    //     onlyOnce = 1
-    //     //alert("hej")
-    //     var strInput = `
-    //   <textarea autofocus id="buu" class="textbox" rows="1" name="" value="" style="width:250px;position:absolute;left:${bodyPos.x}px;top:${bodyPos.y}px;font-size:30px"</textarea>
-    //   `
-    //     $('body').append(strInput)
-    //     $('.textbox').keyup(function (e) {
-    //       while (
-    //         $(this).outerHeight() <
-    //         this.scrollHeight + parseFloat($(this).css('borderTopWidth')) + parseFloat($(this).css('borderBottomWidth'))
-    //       ) {
-    //         $(this).height($(this).height() + 1)
-    //       }
-    //     })
-
-    //     $('.textbox').click().focus()
-    //     $('.textbox').focus()
-    //     setTimeout(function () {
-    //       document.getElementById('buu').focus()
-    //     }, 10)
-    //     // behövs för att fokuser i mobilen
-    //     setTimeout(function () {
-    //       $('.textbox').on('blur', function () {
-    //         ctx.strokeStyle = '#000000'
-    //         ctx.font = '30px Arial'
-    //         var txt = $(this).val()
-    //         var lineheight = 30
-    //         var lines = txt.split('\n')
-    //         for (var i = 0; i < lines.length; i++) {
-    //           ctx.fillText(lines[i], lastPos.x, lastPos.y + i * lineheight + 30)
-    //         }
-    //         //ctx.fillText(text,lastPos.x,lastPos.y+30);
-    //         $('.textbox').val('')
-    //         $('.textbox').remove()
-    //         this.cPush()
-    //         onlyOnce = 0
-    //       })
-    //       // .keypress(function(e) {
-    //       //   if(e.which == 13) {
-    //       //     ctx.strokeStyle = "#000000";
-    //       //     ctx.lineWidth = 3;
-    //       //     ctx.font = "30px Arial";
-    //       //     ctx.fillText($(this).val(),lastPos.x,lastPos.y+30);
-    //       //     $(".textbox").val("");
-    //       //     $(".textbox").remove();
-    //       //     cPush()
-    //       //     onlyOnce = 0;
-    //       //   }
-    //       // });
-    //       white = false
-    //       textBool = false
-    //       drawing = false
-    //     }, 100)
-    //   }
-    // },
   },
 })
 </script>
